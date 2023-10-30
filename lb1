@@ -1,0 +1,80 @@
+// MainActivity.kt
+import android.content.Intent
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.BaseAdapter
+import android.widget.Button
+import android.widget.ImageView
+import android.widget.ListView
+import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
+
+data class Animal(val name: String, val description: String, val imageResId: Int)
+
+class MainActivity : AppCompatActivity() {
+    private val animals = listOf(
+        Animal("Кіт", "Це кіт. Він муркоче.", R.drawable.cat),
+        Animal("Пес", "Це собака. Він гавкає.", R.drawable.dog),
+        Animal("Лисичка", "Це лисичка. Вона хитра.", R.drawable.fox)
+    )
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        val listView = findViewById<ListView>(R.id.listView)
+        val adapter = AnimalAdapter(this, animals)
+        listView.adapter = adapter
+    }
+}
+
+class AnimalAdapter(private val context: MainActivity, private val animals: List<Animal) : BaseAdapter() {
+    override fun getCount(): Int = animals.size
+    override fun getItem(position: Int): Any = animals[position]
+    override fun getItemId(position: Int): Long = position.toLong()
+
+    override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
+        val animal = animals[position]
+        val view = LayoutInflater.from(context).inflate(R.layout.list_item, null)
+
+        val animalImage = view.findViewById<ImageView>(R.id.animalImage)
+        val animalName = view.findViewById<TextView>(R.id.animalName)
+        val animalButton = view.findViewById<Button>(R.id.animalButton)
+
+        animalImage.setImageResource(animal.imageResId)
+        animalName.text = animal.name
+        animalButton.setOnClickListener {
+            val intent = Intent(context, AnimalDetailActivity::class.java)
+            intent.putExtra("animal", animal)
+            context.startActivity(intent)
+        }
+
+        return view
+    }
+}
+
+// AnimalDetailActivity.kt
+import android.os.Bundle
+import android.widget.ImageView
+import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
+
+class AnimalDetailActivity : AppCompatActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_animal_detail)
+
+        val animal = intent.getParcelableExtra<Animal>("animal")
+        val detailImage = findViewById<ImageView>(R.id.detailImage)
+        val detailName = findViewById<TextView>(R.id.detailName)
+        val detailDescription = findViewById<TextView>(R.id.detailDescription)
+
+        if (animal != null) {
+            detailImage.setImageResource(animal.imageResId)
+            detailName.text = animal.name
+            detailDescription.text = animal.description
+        }
+    }
+}
