@@ -1,0 +1,87 @@
+// build.gradle (Module: app)
+dependencies {
+    implementation "androidx.navigation:navigation-fragment-ktx:2.3.0"
+    implementation "androidx.navigation:navigation-ui-ktx:2.3.0"
+    implementation "com.github.bumptech.glide:glide:4.12.0"
+    kapt "com.github.bumptech.glide:compiler:4.12.0"
+}
+
+// MainActivity.kt
+class MainActivity : AppCompatActivity() {
+    private lateinit var navController: NavController
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
+        navController = navHostFragment.navController
+        val appBarConfiguration = AppBarConfiguration(navController.graph)
+
+        val navController = findNavController(R.id.nav_host_fragment)
+        val appBarConfiguration = AppBarConfiguration(navController.graph)
+
+        setupActionBarWithNavController(navController, appBarConfiguration)
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+        return navController.navigateUp() || super.onSupportNavigateUp()
+    }
+}
+
+// ListItem.kt
+data class ListItem(val title: String, val description: String, val imageUrl: String)
+
+// ListFragment.kt
+class ListFragment : Fragment() {
+    private val items = listOf(
+        ListItem("Item 1", "Description 1", "https://example.com/image1.jpg"),
+        ListItem("Item 2", "Description 2", "https://example.com/image2.jpg"),
+        // Додайте інші елементи сюди
+    )
+
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        val binding = DataBindingUtil.inflate<FragmentListBinding>(
+            inflater, R.layout.fragment_list, container, false
+        )
+
+        val recyclerView = binding.recyclerView
+        recyclerView.layoutManager = LinearLayoutManager(requireContext())
+        recyclerView.adapter = ListAdapter(items) { item ->
+            val action = ListFragmentDirections.actionListFragmentToDetailFragment(item)
+            findNavController().navigate(action)
+        }
+
+        return binding.root
+    }
+}
+
+// ListAdapter.kt
+class ListAdapter(private val items: List<ListItem>, private val onItemClick: (ListItem) -> Unit) :
+    RecyclerView.Adapter<ListAdapter.ViewHolder>() {
+    // Реалізація адаптера
+}
+
+// DetailFragment.kt
+class DetailFragment : Fragment() {
+    private val args: DetailFragmentArgs by navArgs()
+
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        val binding = DataBindingUtil.inflate<FragmentDetailBinding>(
+            inflater, R.layout.fragment_detail, container, false
+        )
+
+        val item = args.item
+        binding.itemTitle.text = item.title
+        binding.itemDescription.text = item.description
+        Glide.with(requireContext()).load(item.imageUrl).into(binding.itemImage)
+
+        return binding.root
+    }
+}
